@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ferrofluid — Microplastic Water Purification</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+ :root {
+ --ink: #0a0a0a;
+ --ink2: #2a2a2a;
+ --ink3: #555;
+ --surface: #f7f5f0;
+ --surface2: #edebe4;
+ --accent: #c8451a;
+ --accent2: #1a6bc8;
+ --accent3: #12a66a;
+ --border: rgba(0,0,0,0.08);
+ --card: #fff;
+ }
+ * { margin:0; padding:0; box-sizing:border-box; }
+ html { scroll-behavior: smooth; }
+ body { background: var(--surface); color: var(--ink); font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.65; overflow-x:hidden; }
+ 
+ /* Nav */
+ nav { position: fixed; top:0; left:0; right:0; z-index:100; background: rgba(247,245,240,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+ .nav-inner { max-width:1100px; margin:0 auto; padding:0 2rem; display:flex; align-items:center; justify-content:space-between; height:60px; }
+ .logo { font-family:'DM Serif Display',serif; font-weight:400; font-size:1.2rem; letter-spacing:-.01em; color:var(--accent); }
+ .nav-links { display:flex; gap:2rem; list-style:none; }
+ .nav-links a { text-decoration:none; color:var(--ink2); font-size:.875rem; font-weight:500; transition:color .2s; }
+ .nav-links a:hover { color:var(--accent); }
+ 
+ /* Hero */
+ .hero { min-height:auto; display:flex; align-items:center; padding:100px 2rem 3rem; position:relative; overflow:hidden; }
+ .hero-bg { position:absolute; inset:0; pointer-events:none; }
+ .hero-content { max-width:1100px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:3rem; align-items:center; }
+ .hero-text h1 { font-family:'DM Serif Display',serif; font-size:clamp(2.2rem,4.5vw,3.6rem); font-weight:400; line-height:1.1; letter-spacing:-.01em; margin-bottom:1.5rem; }
+ .hero-text h1 span { color:var(--accent); }
+ .hero-text p { color:var(--ink3); font-size:1.1rem; line-height:1.8; margin-bottom:2rem; max-width:480px; }
+ .hero-badges { display:flex; gap:.75rem; flex-wrap:wrap; }
+ .badge { padding:.35rem .9rem; border-radius:100px; font-size:.8rem; font-weight:500; border:1px solid; }
+ .badge-red { background:#fef0ec; color:#c8451a; border-color:#fac9b9; }
+ .badge-blue { background:#ecf3fe; color:#1a6bc8; border-color:#b9d3fa; }
+ .badge-green { background:#ecfbf5; color:#12a66a; border-color:#b9f0d6; }
+ 
+ /* Ferrofluid Canvas */
+ #ferroCanvas { border-radius:20px; background:#0a0a0a; width:100%; height:420px; cursor:pointer; }
+ .canvas-label { text-align:center; margin-top:.75rem; font-size:.8rem; color:var(--ink3); }
+ 
+ /* Sections */
+ section { padding:3rem 2rem; }
+ .section-inner { max-width:1100px; margin:0 auto; }
+ .section-tag { font-family:'Inter',sans-serif; font-size:.72rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin-bottom:.75rem; }
+ .section-title { font-family:'DM Serif Display',serif; font-size:clamp(1.7rem,2.8vw,2.4rem); font-weight:400; line-height:1.2; letter-spacing:-.01em; margin-bottom:1rem; }
+ .section-sub { color:var(--ink3); font-size:1.05rem; max-width:640px; line-height:1.85; }
+ 
+ /* About section */
+ .about-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; margin-top:2rem; }
+ .fact-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:2rem; transition:transform .2s, box-shadow .2s; }
+ .fact-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(0,0,0,.07); }
+ .fact-icon { font-size:2rem; margin-bottom:1rem; }
+ .fact-card h3 { font-family:'Inter',sans-serif; font-size:1rem; font-weight:600; margin-bottom:.5rem; }
+ .fact-card p { font-size:.95rem; color:var(--ink3); line-height:1.8; }
+ 
+ /* Simulation section */
+ .sim-bg { background: var(--surface2); border-radius:24px; padding:2rem; margin-top:1.5rem; }
+ .sim-steps { display:flex; gap:0; align-items:stretch; position:relative; margin-bottom:2.5rem; overflow-x:auto; padding-bottom:.5rem; }
+ .sim-step-btn { flex:none; padding:.75rem 1.5rem; border:none; background:transparent; cursor:pointer; font-family:'Inter',sans-serif; font-size:.85rem; font-weight:500; color:var(--ink3); border-bottom:2px solid transparent; transition:all .2s; white-space:nowrap; }
+ .sim-step-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+ .sim-divider { width:1px; background:var(--border); flex:none; align-self:stretch; margin:8px 0; }
+ .sim-canvas-wrap { position:relative; border-radius:16px; overflow:hidden; background:#0d1117; height:380px; }
+ #simCanvas { width:100%; height:100%; }
+ .sim-info { margin-top:1.5rem; display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+ .sim-info-card { background:var(--card); border-radius:12px; padding:1.5rem 1.75rem; border:1px solid var(--border); }
+ .sim-info-card h4 { font-family:'Inter',sans-serif; font-size:.95rem; font-weight:600; margin-bottom:.6rem; }
+ .sim-info-card p { font-size:.9rem; color:var(--ink3); line-height:1.75; }
+ .formula { background: #f0f0e8; border-radius:8px; padding:.5rem 1rem; font-family:monospace; font-size:.85rem; color:var(--ink2); margin-top:.5rem; display:inline-block; }
+ 
+ /* Calculator */
+ .calc-bg { background:var(--card); border:1px solid var(--border); border-radius:24px; padding:2rem; margin-top:1.5rem; }
+ .calc-grid { display:grid; grid-template-columns:1fr 1fr; gap:3rem; align-items:start; }
+ .form-group { margin-bottom:1.25rem; }
+ .form-group label { display:block; font-size:.85rem; font-weight:500; margin-bottom:.5rem; color:var(--ink2); }
+ .form-group input, .form-group select { width:100%; padding:.7rem 1rem; border:1.5px solid var(--border); border-radius:10px; font-family:'Inter',sans-serif; font-size:.95rem; background:var(--surface); color:var(--ink); transition:border-color .2s; }
+ .form-group input:focus, .form-group select:focus { outline:none; border-color:var(--accent2); }
+ .calc-btn { width:100%; padding:.85rem; background:var(--accent); color:#fff; border:none; border-radius:12px; font-family:'Inter',sans-serif; font-size:.95rem; font-weight:600; cursor:pointer; transition:opacity .2s, transform .1s; }
+ .calc-btn:hover { opacity:.9; }
+ .calc-btn:active { transform:scale(.98); }
+ .results { }
+ .result-big { background:linear-gradient(135deg,#c8451a,#e8651a); border-radius:16px; padding:2rem; color:#fff; margin-bottom:1rem; }
+ .result-big .num { font-family:'DM Serif Display',serif; font-size:3.2rem; font-weight:400; line-height:1; }
+ .result-big .unit { font-size:1rem; opacity:.8; margin-top:.25rem; }
+ .result-big .label { font-size:.85rem; opacity:.7; margin-top:.75rem; }
+ .result-row { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+ .result-item { background:var(--surface); border-radius:12px; padding:1rem 1.25rem; }
+ .result-item .r-val { font-family:'DM Serif Display',serif; font-size:1.35rem; font-weight:400; }
+ .result-item .r-label { font-size:.82rem; color:var(--ink3); margin-top:.4rem; }
+ .disclaimer { margin-top:1rem; padding:1rem 1.25rem; background:#fef9ec; border-radius:8px; font-size:.85rem; color:#7a5c10; border:1px solid #fae5a0; line-height:1.75; }
+ 
+ /* Map section */
+ .map-bg { background:var(--surface2); border-radius:24px; padding:2rem; margin-top:1.5rem; }
+ .map-wrap { border-radius:16px; overflow:hidden; height:480px; position:relative; margin-bottom:1.5rem; }
+ #contamMap { width:100%; height:100%; }
+ .map-legend { display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1.5rem; align-items:center; }
+ .legend-item { display:flex; align-items:center; gap:.5rem; font-size:.85rem; color:var(--ink2); }
+ .legend-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; }
+ .map-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-top:1.5rem; }
+ .mstat { background:var(--card); border-radius:12px; padding:1rem 1.25rem; border:1px solid var(--border); text-align:center; }
+ .mstat .mv { font-family:'DM Serif Display',serif; font-size:1.5rem; font-weight:400; color:var(--accent); }
+ .mstat .ml { font-size:.85rem; color:var(--ink3); margin-top:.4rem; line-height:1.5; }
+ 
+ /* Footer */
+ footer { background:var(--ink); color:#999; padding:1.75rem 2rem; text-align:center; }
+ footer .fi { font-family:'DM Serif Display',serif; font-size:1.2rem; font-weight:400; color:#fff; margin-bottom:.5rem; }
+ footer p { font-size:.85rem; }
+ 
+
+ 
+ @media(max-width:768px){ .sources-grid { grid-template-columns:1fr; } }
+
+ @media(max-width:768px) {
+ .hero-content, .about-grid, .calc-grid, .sim-info, .map-stats { grid-template-columns:1fr; }
+ .hero-content { gap:2rem; }
+ #ferroCanvas { height:280px; }
+ .result-row { grid-template-columns:1fr; }
+ }
+</style>
+</head>
+<body>
+
+<nav>
+ <div class="nav-inner">
+ <div class="logo">Ferro<span style="color:var(--ink2)">Fluid</span></div>
+ <ul class="nav-links">
+ <li><a href="#about">About</a></li>
+ <li><a href="#simulation">Simulation</a></li>
+ <li><a href="#calculator">Calculator</a></li>
+ <li><a href="#map">Map 2026</a></li>
+ </ul>
+ </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+ <canvas class="hero-bg" id="heroBg"></canvas>
+ <div class="hero-content">
+ <div class="hero-text">
+ <h1>Ferrofluid<br>vs<br><span>microplastics</span></h1>
+ <p>An innovative approach to removing PET microplastics from water bodies using iron oxide (Fe₃O₄) magnetic nanoparticles. Under controlled lab conditions, removal efficiency can reach up to 99%.</p>
+ <div class="hero-badges">
+ <span class="badge badge-red">Up to 99% efficiency (lab)</span>
+ <span class="badge badge-blue">Fe₃O₄ nanoparticles</span>
+ <span class="badge badge-green">Caspian Sea 2026</span>
+ </div>
+ </div>
+ <div>
+ <canvas id="ferroCanvas" title="Click to interact with the ferrofluid"></canvas>
+ <p class="canvas-label">↑ Click or drag — the ferrofluid responds to your cursor like a magnet</p>
+ </div>
+ </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+ <div class="section-inner">
+ <p class="section-tag">What is ferrofluid</p>
+ <h2 class="section-title">A liquid that<br>behaves like a magnet</h2>
+ <p class="section-sub">Ferrofluid is a colloidal system of nano-sized Fe₃O₄ particles stably dispersed in an oil base. Under an external magnetic field the liquid deforms, aligns into structures, and becomes a controllable sorbent.</p>
+ <div class="about-grid">
+ <div class="fact-card">
+ <div class="fact-icon">⚗️</div>
+ <h3>Ferrofluid composition</h3>
+ <p>Sunflower oil + Fe₃O₄ (iron oxide) powder. Surfactants prevent nanoparticle agglomeration, maintaining a stable dispersion and preserving the magnetic response.</p>
+ </div>
+ <div class="fact-card">
+ <div class="fact-icon">🧲</div>
+ <h3>How it works</h3>
+ <p>The hydrophobic PET surface adheres to the oil phase of the ferrofluid. Magnetic nanoparticles allow the entire system — with bound plastic — to be extracted by an external magnet.</p>
+ </div>
+ <div class="fact-card">
+ <div class="fact-icon">🧪</div>
+ <h3>Role of water pH</h3>
+ <p>Water pH influences the electrostatic interaction between Fe₃O₄ nanoparticles and PET surfaces. Studies report removal efficiency above 91% under tested pH conditions (pH 6–8). Iron-oxide sorbents maintain &gt;91% efficiency across a broad pH range of 4–9. pH is a key optimisation parameter.</p>
+ <div class="formula">F_b = ρ·g·V (Archimedes' Law)</div>
+ </div>
+ <div class="fact-card">
+ <div class="fact-icon">🌊</div>
+ <h3>The microplastic problem</h3>
+ <p>Microplastics are officially defined as particles smaller than 5 mm. Rivers carry 1.15–2.41 million tonnes of plastic into oceans every year. Particles enter food chains through bioaccumulation. Recent studies have detected microplastics in Caspian Sea fish and water samples.</p>
+ <div class="formula">460 Mt/yr global production</div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- SIMULATION -->
+<section id="simulation" style="background:var(--surface)">
+ <div class="section-inner">
+ <p class="section-tag">Step-by-step process</p>
+ <h2 class="section-title">From contamination<br>to clean water</h2>
+ <p class="section-sub">3D simulation of the physical purification process: how ferrofluid binds PET particles and how a magnet extracts them from the water.</p>
+ <div class="sim-bg">
+ <div class="sim-steps">
+ <button class="sim-step-btn active" onclick="setStep(0)">1. Contamination</button>
+ <div class="sim-divider"></div>
+ <button class="sim-step-btn" onclick="setStep(1)">2. Ferrofluid</button>
+ <div class="sim-divider"></div>
+ <button class="sim-step-btn" onclick="setStep(2)">3. Binding</button>
+ <div class="sim-divider"></div>
+ <button class="sim-step-btn" onclick="setStep(3)">4. Magnet</button>
+ <div class="sim-divider"></div>
+ <button class="sim-step-btn" onclick="setStep(4)">5. Extraction</button>
+ <div class="sim-divider"></div>
+ <button class="sim-step-btn" onclick="setStep(5)">6. Clean water</button>
+ </div>
+ <div class="sim-canvas-wrap">
+ <canvas id="simCanvas"></canvas>
+ </div>
+ <div class="sim-info" id="simInfo">
+ <div class="sim-info-card">
+ <h4 id="simTitle">Contaminated water</h4>
+ <p id="simDesc">PET microplastic (0.5–5 mm) is suspended in water. Particles stay afloat due to Archimedes' buoyant force: F_b = ρ·g·V</p>
+ </div>
+ <div class="sim-info-card">
+ <h4>Physics of the process</h4>
+ <p id="simPhys">Plastic buoyancy: PET density (1.38 g/cm³) is less than water at pH 4–5, so particles remain near the surface. Drag force: F_d = ½ · C_d · ρ · A · v²</p>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- CALCULATOR -->
+<section id="calculator">
+ <div class="section-inner">
+ <p class="section-tag">IB Calculation Model</p>
+ <h2 class="section-title">Ferrofluid<br>Calculator</h2>
+ <p class="section-sub">Enter the parameters of the contaminated area — the calculator computes the required ferrofluid volume using: V = m / (E × C)</p>
+ <div class="model-note">
+ </div>
+ <div class="calc-bg">
+ <div class="calc-grid">
+ <div>
+ <div class="form-group">
+ <label>Contamination area (m²)</label>
+ <input type="number" id="area" value="100" min="1" max="100000" step="1">
+ </div>
+ <div class="form-group">
+ <label>Pollution density (kg/m²)</label>
+ <input type="number" id="density" value="0.3" min="0.01" max="10" step="0.01">
+ </div>
+ <div class="form-group">
+ <label>Fe₃O₄ concentration (%)</label>
+ <select id="concentration">
+ <option value="0.10">10%</option>
+ <option value="0.15" selected>15% (recommended)</option>
+ <option value="0.20">20%</option>
+ <option value="0.25">25%</option>
+ </select>
+ </div>
+ <div class="form-group">
+ <label>Binding efficiency (kg/L)</label>
+ <input type="number" id="efficiency" value="1.0" min="0.1" max="2" step="0.1">
+ </div>
+ <div class="form-group">
+ <label>Water pH (modelled efficiency factor)</label>
+ <select id="phLevel">
+ <option value="0.990">pH 6.0–6.5 — optimal (model: ~99%) </option>
+ <option value="0.910">pH 7.0–8.0 — tested range (model: ~91%) </option>
+ <option value="0.640">Actual wastewater (reported: ~64%) </option>
+ </select>
+ </div>
+ <button class="calc-btn" onclick="calculate()">Calculate →</button>
+ </div>
+ <div class="results" id="results">
+ <div class="result-big">
+ <div class="num" id="resVol">200</div>
+ <div class="unit">litres of ferrofluid</div>
+ <div class="label">Required volume for purification</div>
+ </div>
+ <div class="result-row">
+ <div class="result-item">
+ <div class="r-val" id="resMass">30</div>
+ <div class="r-label">kg of plastic</div>
+ </div>
+ <div class="result-item">
+ <div class="r-val" id="resEff">~99%</div>
+ <div class="r-label">removal efficiency</div>
+ </div>
+ <div class="result-item">
+ <div class="r-val" id="resArea">100</div>
+ <div class="r-label">m² area</div>
+ </div>
+ <div class="result-item">
+ <div class="r-val" id="resCon">15%</div>
+ <div class="r-label">Fe₃O₄ concentration</div>
+ </div>
+ </div>
+ <div class="disclaimer">
+⚠️ This calculation is a theoretical estimate based on assumptions about ferrofluid efficiency (E = 1.0 kg/L) and pollution density (0.3 kg/m²). These values are not empirically validated. Actual performance depends on plastic type, pH, turbulence, and environmental conditions. Source: .
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- MAP -->
+<section id="map" style="background:var(--surface2)">
+ <div class="section-inner">
+ <p class="section-tag">Illustrative contamination model 2026</p>
+ <h2 class="section-title">Microplastic map:<br>from the Caspian Sea</h2>
+ <p class="section-sub">Illustrative map of microplastic contamination risk in Kazakhstan and Central Asia. Severity zones are modelled estimates informed by peer-reviewed literature. Main dispersal routes from the Caspian Sea through regional rivers are shown for educational purposes.</p>
+ <div class="map-bg">
+ <div class="map-legend">
+ <div class="legend-item"><div class="legend-dot" style="background:#e53e1a"></div> Critical (illustrative)</div>
+ <div class="legend-item"><div class="legend-dot" style="background:#f57c00"></div> High (illustrative)</div>
+ <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div> Medium (illustrative)</div>
+ <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div> Low (illustrative)</div>
+ <div class="legend-item"><div class="legend-dot" style="background:#6366f1; width:10px;height:4px;border-radius:2px"></div> Dispersal routes</div>
+ </div>
+ <div class="map-wrap">
+ <canvas id="contamMap"></canvas>
+ </div>
+ <div class="map-stats">
+ <div class="mstat"><div class="mv">0.056–0.635</div><div class="ml">MP/m³ — microplastic concentration in southern Caspian surface water</div></div>
+ <div class="mstat"><div class="mv">68.98%</div><div class="ml">of examined Caspian fish contained microplastics (2022 study)</div></div>
+ <div class="mstat"><div class="mv">~15%</div><div class="ml">plastic recycling rate in Kazakhstan (2024)</div></div>
+ </div>
+ <div style="margin-top:1.25rem"></div>
+ <div class="map-disclaimer">
+ 🗺️ <strong>Map disclaimer:</strong> Severity zones are <strong>illustrative models</strong> and should not be interpreted as official monitoring data.
+ Point labels with specific kg/m² values in the hover tooltips are theoretical estimates only.
+ </div>
+ </div>
+ </div>
+</section>
+
+<footer>
+ <div class="fi">FerrFluid Research</div>
+</footer>
+
+<script>
+// ==================== HERO FERROFLUID CANVAS ====================
+(function(){
+ const canvas = document.getElementById('ferroCanvas');
+ const ctx = canvas.getContext('2d');
+ let W, H;
+ let mouse = {x:-1000, y:-1000, active:false};
+ 
+ function resize(){
+ W = canvas.width = canvas.offsetWidth;
+ H = canvas.height = canvas.offsetHeight;
+ }
+ resize();
+ window.addEventListener('resize', resize);
+ 
+ // Particles representing ferrofluid droplets
+ const N = 280;
+ const particles = [];
+ 
+ for(let i=0;i<N;i++){
+ particles.push({
+ x: Math.random()*800, y: Math.random()*420,
+ vx:0, vy:0,
+ r: 2 + Math.random()*3,
+ base: {x:0,y:0},
+ angle: Math.random()*Math.PI*2,
+ speed: 0.003 + Math.random()*0.008,
+ radius: 20 + Math.random()*80,
+ hue: 180 + Math.random()*60
+ });
+ particles[i].base.x = Math.random()*800;
+ particles[i].base.y = Math.random()*420;
+ }
+ 
+ let spikes = [];
+ for(let i=0;i<24;i++){
+ spikes.push({angle: (i/24)*Math.PI*2, len:0, maxLen:0});
+ }
+ 
+ let t = 0;
+ function animate(){
+ requestAnimationFrame(animate);
+ ctx.clearRect(0,0,W,H);
+ t += 0.016;
+ 
+ const cx = W/2, cy = H/2;
+ 
+ // Draw fluid blob
+ const blobR = 70 + Math.sin(t*0.4)*8;
+ 
+ // Update spikes toward mouse
+ spikes.forEach((sp, i)=>{
+ const bx = cx + Math.cos(sp.angle)*blobR;
+ const by = cy + Math.sin(sp.angle)*blobR;
+ const dx = mouse.x - bx, dy = mouse.y - by;
+ const dist = Math.sqrt(dx*dx+dy*dy);
+ const target = mouse.active ? Math.max(0, 1-dist/200)*90 + Math.sin(t*2+i)*5 : Math.sin(t*1.5+i*0.8)*12;
+ sp.len += (target - sp.len)*0.08;
+ });
+ 
+ // Spiky blob
+ ctx.beginPath();
+ spikes.forEach((sp, i)=>{
+ const nx = sp.angle + (spikes[1].angle-spikes[0].angle)*0.5;
+ const mid = blobR + sp.len*0.5;
+ const r = blobR + sp.len;
+ const x1 = cx + Math.cos(sp.angle)*r;
+ const y1 = cy + Math.sin(sp.angle)*r;
+ if(i===0) ctx.moveTo(x1,y1);
+ else {
+ const prev = spikes[(i-1+spikes.length)%spikes.length];
+ const pr = blobR + prev.len;
+ const px = cx + Math.cos(prev.angle)*pr;
+ const py = cy + Math.sin(prev.angle)*pr;
+ const cpx = cx + Math.cos((prev.angle+sp.angle)/2)*mid;
+ const cpy = cy + Math.sin((prev.angle+sp.angle)/2)*mid;
+ ctx.quadraticCurveTo(cpx,cpy,x1,y1);
+ }
+ });
+ ctx.closePath();
+ const g = ctx.createRadialGradient(cx,cy,10,cx,cy,blobR+60);
+ g.addColorStop(0,'rgba(60,190,180,0.95)');
+ g.addColorStop(0.5,'rgba(20,120,160,0.88)');
+ g.addColorStop(1,'rgba(5,40,80,0.7)');
+ ctx.fillStyle = g;
+ ctx.fill();
+ 
+ // Floating particles
+ const scale = W/800;
+ particles.forEach(p=>{
+ p.angle += p.speed;
+ const ox = p.radius*Math.cos(p.angle)*0.3;
+ const oy = p.radius*Math.sin(p.angle)*0.5;
+ let px = (p.base.x + ox)*scale;
+ let py = (p.base.y + oy)*(H/420);
+ 
+ if(mouse.active){
+ const dx = mouse.x-px, dy = mouse.y-py;
+ const d = Math.sqrt(dx*dx+dy*dy);
+ if(d<180){
+ const force = (1-d/180)*3;
+ px += dx/d*force;
+ py += dy/d*force;
+ }
+ }
+ 
+ const alpha = 0.3 + Math.sin(p.angle)*0.2;
+ ctx.beginPath();
+ ctx.arc(px,py,p.r*scale,0,Math.PI*2);
+ ctx.fillStyle = `hsla(${p.hue},80%,65%,${alpha})`;
+ ctx.fill();
+ });
+ 
+ // Center glow
+ const gc = ctx.createRadialGradient(cx,cy,0,cx,cy,blobR);
+ gc.addColorStop(0,'rgba(120,255,240,0.15)');
+ gc.addColorStop(1,'rgba(0,0,0,0)');
+ ctx.beginPath();
+ ctx.arc(cx,cy,blobR,0,Math.PI*2);
+ ctx.fillStyle = gc;
+ ctx.fill();
+ }
+ animate();
+ 
+ canvas.addEventListener('mousemove',e=>{
+ const r = canvas.getBoundingClientRect();
+ mouse.x = e.clientX-r.left; mouse.y = e.clientY-r.top; mouse.active=true;
+ });
+ canvas.addEventListener('mouseleave',()=>{ mouse.active=false; });
+ canvas.addEventListener('touchmove',e=>{
+ e.preventDefault();
+ const r = canvas.getBoundingClientRect();
+ mouse.x = e.touches[0].clientX-r.left; mouse.y = e.touches[0].clientY-r.top; mouse.active=true;
+ },{passive:false});
+})();
+
+// ==================== HERO BACKGROUND ====================
+(function(){
+ const bg = document.getElementById('heroBg');
+ const ctx = bg.getContext('2d');
+ function resize(){ bg.width=window.innerWidth; bg.height=window.innerHeight; }
+ resize(); window.addEventListener('resize',resize);
+ let t=0;
+ function draw(){
+ requestAnimationFrame(draw);
+ t+=0.004;
+ ctx.clearRect(0,0,bg.width,bg.height);
+ for(let i=0;i<5;i++){
+ const x = bg.width*(0.1+i*0.2)+Math.sin(t+i)*40;
+ const y = bg.height*0.6+Math.cos(t*0.7+i)*60;
+ const r = 200+i*60;
+ const g = ctx.createRadialGradient(x,y,0,x,y,r);
+ const c = ['rgba(200,69,26,0.04)','rgba(26,107,200,0.04)','rgba(18,166,106,0.04)','rgba(200,69,26,0.03)','rgba(26,107,200,0.03)'][i];
+ g.addColorStop(0,c); g.addColorStop(1,'rgba(0,0,0,0)');
+ ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fillStyle=g; ctx.fill();
+ }
+ }
+ draw();
+})();
+
+// ==================== SIMULATION ====================
+const stepData = [
+ {
+ title:'Contaminated water',
+ desc:'PET microplastic (0.5–5 mm) is suspended in water. Particles stay afloat due to Archimedes\' buoyant force: F_b = ρ·g·V',
+ phys:'Plastic buoyancy: PET density ≈ 1.38 g/cm³. Drag force acting on moving particles: F_d = ½ · C_d · ρ · A · v²'
+ },
+ {
+ title:'Adding ferrofluid',
+ desc:'Ferrofluid (sunflower oil + Fe₃O₄) is introduced into the water. The oil phase begins to spread across the surface.',
+ phys:'Newton\' second law governs droplet motion: F = m·a. Surface tension determines the shape of ferrofluid droplets.'
+ },
+ {
+ title:'Plastic binding',
+ desc:'The hydrophobic PET surface is attracted to the oil phase of the ferrofluid. Plastic particles "stick" to the droplets.',
+ phys:'Electrostatic attraction between Fe₃O₄ and PET changes with pH. Studies report >91% removal efficiency across tested pH 6–8 conditions . The ζ-potential plays a key role.'
+ },
+ {
+ title:'Magnet approach',
+ desc:'An external permanent magnet is brought close to the surface. Fe₃O₄ magnetic nanoparticles respond to the field.',
+ phys:'Magnetic force: F = q·v·B. Nanoparticles align along field lines and pull the entire ferrofluid–plastic complex with them.'
+ },
+ {
+ title:'Ferrofluid extraction',
+ desc:'The magnet is moved — ferrofluid with bound plastic follows it and rises out of the water.',
+ phys:'F_magnet > F_gravity + F_drag. The entire "ferrofluid + PET" complex is extracted as one unit — no filtration needed.'
+ },
+ {
+ title:'Clean water',
+ desc:'After ferrofluid extraction the water is free of PET particles. The ferrofluid can be regenerated and reused.',
+ phys:'Peer-reviewed studies report up to 99% removal in controlled conditions using lubricating oil + Fe₃O₄ at optimised pH 6–6.5 . Real-world efficiency in actual wastewater: ~64%. Model uses 15% Fe₃O₄ concentration.'
+ }
+];
+
+let currentStep = 0;
+let simParticles = [];
+let ferroDrops = [];
+let magnetPos = {x:800, y:-80, active:false};
+let simT = 0;
+let simAnim;
+
+function initSim(){
+ const c = document.getElementById('simCanvas');
+ const W = c.width = c.offsetWidth;
+ const H = c.height = c.offsetHeight || 380;
+ return {c, W, H, ctx: c.getContext('2d')};
+}
+
+function setStep(i){
+ document.querySelectorAll('.sim-step-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+ currentStep = i;
+ document.getElementById('simTitle').textContent = stepData[i].title;
+ document.getElementById('simDesc').textContent = stepData[i].desc;
+ document.getElementById('simPhys').textContent = stepData[i].phys;
+}
+
+(function simLoop(){
+ const {c,W,H,ctx} = initSim();
+ 
+ // Init plastic particles
+ simParticles = [];
+ for(let i=0;i<40;i++){
+ simParticles.push({
+ x:50+Math.random()*(W-100), y:80+Math.random()*(H*0.55),
+ vx:(Math.random()-.5)*0.4, vy:(Math.random()-.5)*0.2,
+ r:4+Math.random()*8, attached:false, attached2:false,
+ color:`hsl(${195+Math.random()*20},${50+Math.random()*20}%,${60+Math.random()*20}%)`
+ });
+ }
+ 
+ ferroDrops = [];
+ for(let i=0;i<20;i++){
+ ferroDrops.push({
+ x:50+Math.random()*(W-100), y:60+Math.random()*(H*0.4),
+ vx:(Math.random()-.5)*0.5, vy:(Math.random()-.5)*0.3,
+ r:6+Math.random()*10, visible:false, collecting:false
+ });
+ }
+ 
+ let magY = H+50;
+ 
+ function draw(){
+ simAnim = requestAnimationFrame(draw);
+ simT += 0.016;
+ ctx.clearRect(0,0,W,H);
+ 
+ // Water background
+ const wg = ctx.createLinearGradient(0,0,0,H);
+ wg.addColorStop(0,'#0d2137');
+ wg.addColorStop(1,'#071220');
+ ctx.fillStyle = wg;
+ ctx.fillRect(0,0,W,H);
+ 
+ // Water surface ripple
+ ctx.beginPath();
+ ctx.moveTo(0,50);
+ for(let x=0;x<=W;x+=4){
+ ctx.lineTo(x, 50+Math.sin(x*0.04+simT*1.2)*3+Math.sin(x*0.02-simT*0.7)*2);
+ }
+ ctx.lineTo(W,0); ctx.lineTo(0,0); ctx.closePath();
+ ctx.fillStyle='rgba(10,20,40,0.9)'; ctx.fill();
+ 
+ // Surface shimmer
+ ctx.beginPath();
+ for(let x=0;x<=W;x+=4){
+ ctx.moveTo(x, 50+Math.sin(x*0.04+simT*1.2)*3+Math.sin(x*0.02-simT*0.7)*2);
+ ctx.lineTo(x, 50+Math.sin(x*0.04+simT*1.2)*3+Math.sin(x*0.02-simT*0.7)*2+1);
+ }
+ ctx.strokeStyle='rgba(100,200,255,0.25)'; ctx.lineWidth=1; ctx.stroke();
+ 
+ const s = currentStep;
+ 
+ // Step 0-1: floating plastic
+ if(s <= 3){
+ simParticles.forEach(p=>{
+ if(!p.attached){
+ p.x += p.vx + Math.sin(simT*0.5+p.r)*0.15;
+ p.y += p.vy;
+ const surf = 50+Math.sin(p.x*0.04+simT*1.2)*3;
+ if(p.y < surf+p.r) { p.y = surf+p.r; p.vy = Math.abs(p.vy)*0.3; }
+ if(p.y > H-20-p.r) { p.y = H-20-p.r; p.vy = -Math.abs(p.vy)*0.3; }
+ if(p.x<p.r||p.x>W-p.r) p.vx*=-1;
+ }
+ // When ferrofluid present (s>=1), attach some
+ if(s>=2 && !p.attached && Math.random()<0.001){
+ ferroDrops.forEach(fd=>{
+ if(fd.visible && !p.attached){
+ const dx=fd.x-p.x, dy=fd.y-p.y;
+ if(Math.sqrt(dx*dx+dy*dy)<fd.r+p.r+5){
+ p.attached=true; p.attachTo=fd;
+ }
+ }
+ });
+ }
+ if(p.attached && p.attachTo){
+ p.x = p.attachTo.x + (p.x-p.attachTo.x)*0.9;
+ p.y = p.attachTo.y + (p.y-p.attachTo.y)*0.9;
+ }
+ 
+ // Draw plastic particle
+ const alpha = (s===5 && !p.attached) ? Math.max(0, 1-simT*0.2) : 1;
+ ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+ ctx.fillStyle = p.color.replace(')',`,${alpha})`).replace('hsl','hsla');
+ ctx.fill();
+ ctx.strokeStyle=`rgba(255,255,255,0.2)`; ctx.lineWidth=0.5; ctx.stroke();
+ });
+ }
+ 
+ // Ferrofluid drops (step 1+)
+ ferroDrops.forEach((fd,i)=>{
+ if(s>=1) fd.visible=true;
+ if(!fd.visible) return;
+ 
+ fd.x += Math.sin(simT*0.7+i)*0.4;
+ fd.y += Math.cos(simT*0.5+i*0.8)*0.3;
+ 
+ if(s>=3){
+ // Move toward magnet area
+ const magX = W*0.7;
+ fd.x += (magX-fd.x)*0.005;
+ fd.y += (80-fd.y)*0.005;
+ }
+ if(s>=4){
+ // Rise upward
+ fd.y -= 1.5;
+ fd.x += (W*0.7-fd.x)*0.02;
+ if(fd.y < -20) { fd.y = -20; }
+ }
+ 
+ const fy = Math.max(60, Math.min(fd.y, H-30));
+ ctx.beginPath(); ctx.arc(fd.x, fy, fd.r, 0, Math.PI*2);
+ const fg = ctx.createRadialGradient(fd.x-2,fy-2,1,fd.x,fy,fd.r);
+ fg.addColorStop(0,'rgba(80,220,180,0.9)');
+ fg.addColorStop(0.6,'rgba(20,120,100,0.85)');
+ fg.addColorStop(1,'rgba(5,50,60,0.6)');
+ ctx.fillStyle=fg; ctx.fill();
+ 
+ // Spike effect
+ if(s>=3){
+ for(let k=0;k<6;k++){
+ const ang = (k/6)*Math.PI*2+simT;
+ const sLen = 8+Math.sin(simT*2+k)*4;
+ ctx.beginPath();
+ ctx.moveTo(fd.x+Math.cos(ang)*fd.r, fy+Math.sin(ang)*fd.r);
+ ctx.lineTo(fd.x+Math.cos(ang)*(fd.r+sLen), fy+Math.sin(ang)*(fd.r+sLen));
+ ctx.strokeStyle='rgba(100,240,200,0.6)'; ctx.lineWidth=1.5; ctx.stroke();
+ }
+ }
+ });
+ 
+ // Magnet (step 3+)
+ if(s>=3){
+ const mx = W*0.7;
+ const targetY = s>=4 ? 30 : 80;
+ magY += (targetY-magY)*0.05;
+ 
+ // Magnet shape
+ ctx.fillStyle='#e53e1a';
+ ctx.beginPath(); ctx.roundRect(mx-40,magY-15,80,30,6); ctx.fill();
+ ctx.fillStyle='#fff';
+ ctx.font='bold 12px Inter'; ctx.textAlign='center';
+ ctx.fillText('MAGNET', mx, magY+5);
+ 
+ // Field lines
+ for(let k=0;k<8;k++){
+ const ang = (k/8)*Math.PI*2;
+ ctx.beginPath();
+ ctx.moveTo(mx+Math.cos(ang)*45, magY+Math.sin(ang)*20);
+ ctx.quadraticCurveTo(mx+Math.cos(ang)*90, magY+Math.sin(ang)*60,
+ mx+Math.cos(ang)*120, magY+Math.sin(ang)*100);
+ ctx.strokeStyle=`rgba(255,100,50,${0.15+k%2*0.1})`; ctx.lineWidth=1;
+ ctx.setLineDash([4,4]); ctx.stroke(); ctx.setLineDash([]);
+ }
+ }
+ 
+ // Step 5: clean water effect
+ if(s===5){
+ const cleanG = ctx.createLinearGradient(0,50,0,H);
+ cleanG.addColorStop(0,'rgba(20,100,160,0.3)');
+ cleanG.addColorStop(1,'rgba(0,0,0,0)');
+ ctx.fillStyle=cleanG; ctx.fillRect(0,50,W,H-50);
+ ctx.font='600 14px Inter'; ctx.textAlign='center'; ctx.fillStyle='rgba(100,220,180,0.9)';
+ ctx.fillText('✓ Water purified | Turbidity reduced to normal', W/2, H-25);
+ }
+ 
+ // HUD
+ ctx.font='500 11px Inter'; ctx.fillStyle='rgba(200,220,255,0.6)'; ctx.textAlign='left';
+ ctx.fillText(`Step ${currentStep+1}/6 · Model pH range: 6–8 · T: ${(simT).toFixed(1)}s`, 16, H-14);
+ }
+ draw();
+})();
+
+// ==================== CALCULATOR ====================
+function calculate(){
+ const A = parseFloat(document.getElementById('area').value)||100;
+ const d = parseFloat(document.getElementById('density').value)||0.3;
+ const C = parseFloat(document.getElementById('concentration').value)||0.15;
+ const E = parseFloat(document.getElementById('efficiency').value)||1.0;
+ const pH_eff = parseFloat(document.getElementById('phLevel').value)||0.993;
+ 
+ const m = A * d;
+ const V = m / (E * C);
+ const Veff = V / pH_eff;
+ 
+ document.getElementById('resVol').textContent = Math.round(Veff);
+ document.getElementById('resMass').textContent = m.toFixed(1);
+ document.getElementById('resEff').textContent = (pH_eff*100).toFixed(1)+'%';
+ document.getElementById('resArea').textContent = A;
+ document.getElementById('resCon').textContent = (C*100).toFixed(0)+'%';
+}
+calculate();
+
+// ==================== CONTAMINATION MAP ====================
+(function(){
+ const c = document.getElementById('contamMap');
+ const ctx = c.getContext('2d');
+ 
+ function resize(){
+ c.width = c.offsetWidth;
+ c.height = c.offsetHeight || 480;
+ }
+ resize(); window.addEventListener('resize', resize);
+ 
+ const W = ()=>c.width, H = ()=>c.height;
+ 
+ // Map data points (approximate geographic coords mapped to canvas)
+ // Central Asia: lat 36-55, lon 50-90
+ function geo2px(lat, lon){
+ const x = (lon-49)/(91-49)*W();
+ const y = (55-lat)/(55-35)*H();
+ return {x,y};
+ }
+ 
+ const contamPoints = [
+ // Caspian Sea region
+ {lat:42, lon:51, severity:'critical', label:'Caspian (south)', val:'MP detected ()'},
+ {lat:44, lon:50.5, severity:'critical', label:'Caspian (centre)', val:'MP detected — Caspian central'},
+ {lat:46, lon:51, severity:'high', label:'Caspian (north)', val:'MP detected — Caspian north'},
+ {lat:47.5, lon:52, severity:'high', label:'Ustyurt', val:'Illustrative risk estimate'},
+ // Aral Sea
+ {lat:44.5, lon:59, severity:'critical', label:'Aral (dry)', val:'Severely degraded — Aral basin'},
+ {lat:45, lon:60, severity:'critical', label:'Small Aral', val:'MP detected — Small Aral'},
+ // Syr Darya
+ {lat:41, lon:68, severity:'high', label:'Syr Darya (mouth)', val:'Illustrative risk estimate'},
+ {lat:42, lon:65, severity:'medium', label:'Syr Darya (mid)', val:'Illustrative risk estimate'},
+ {lat:41, lon:71, severity:'medium', label:'Fergana Valley', val:'Illustrative risk estimate'},
+ // Amu Darya
+ {lat:40.5, lon:62, severity:'high', label:'Amu Darya', val:'Illustrative risk estimate'},
+ // Kazakhstan lakes
+ {lat:51.5, lon:68, severity:'medium', label:'Astana (lakes)', val:'Illustrative risk estimate'},
+ {lat:51, lon:71.5, severity:'medium', label:'Akmola Region (model)', val:'Illustrative — no local data'},
+ {lat:49, lon:62.5, severity:'low', label:'Balkhash (west)', val:'Illustrative risk estimate'},
+ {lat:46.5, lon:75.5, severity:'medium', label:'Balkhash (east)', val:'Illustrative risk estimate'},
+ // Volga mouth
+ {lat:46.5, lon:48, severity:'high', label:'Volga Delta', val:'Illustrative — Volga Delta'},
+ // Caspian eastern coast
+ {lat:40, lon:53, severity:'high', label:'Turkmenbashi', val:'Illustrative risk estimate'},
+ ];
+ 
+ const routes = [
+ // Volga → Caspian
+ [[46.5,48],[45,49.5],[44,50.5]],
+ // Caspian → Aral via Amu
+ [[42,51],[41.5,57],[40.5,62],[44.5,59]],
+ // Syr Darya
+ [[41,71],[41.5,68],[43,63],[44,60]],
+ // Caspian north → Kazakhstan
+ [[47,52],[49,55],[51,62]],
+ ];
+ 
+ const colorMap = {critical:'#e53e1a', high:'#f57c00', medium:'#fbbf24', low:'#3b82f6'};
+ 
+ let hovered = null;
+ let animT = 0;
+ 
+ c.addEventListener('mousemove', e=>{
+ const r = c.getBoundingClientRect();
+ const mx = e.clientX-r.left, my = e.clientY-r.top;
+ hovered = null;
+ contamPoints.forEach(p=>{
+ const pos = geo2px(p.lat,p.lon);
+ const d = Math.sqrt((pos.x-mx)**2+(pos.y-my)**2);
+ if(d<20) hovered=p;
+ });
+ });
+ c.addEventListener('mouseleave',()=>hovered=null);
+ 
+ function drawMap(){
+ requestAnimationFrame(drawMap);
+ animT += 0.016;
+ const w=W(), h=H();
+ ctx.clearRect(0,0,w,h);
+ 
+ // Ocean/land background
+ const bg = ctx.createLinearGradient(0,0,w,h);
+ bg.addColorStop(0,'#0f1f35');
+ bg.addColorStop(1,'#162030');
+ ctx.fillStyle=bg; ctx.fillRect(0,0,w,h);
+ 
+ // Simplified land mass (Central Asia outline)
+ ctx.fillStyle='#1a2a1a';
+ ctx.fillRect(0,0,w,h);
+ 
+ // Water bodies
+ function drawWater(pts, col, alpha=0.7){
+ ctx.beginPath();
+ pts.forEach((p,i)=>{
+ const {x,y}=geo2px(p[0],p[1]);
+ i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+ });
+ ctx.closePath();
+ ctx.fillStyle=col+Math.round(alpha*255).toString(16).padStart(2,'0');
+ ctx.fill();
+ }
+ 
+ // Caspian Sea
+ drawWater([[37,49],[38,50.5],[40,54],[42,53.5],[44,52],[47.5,52],[47,51],[45,49.5],[42,50],[39,49.5],[37,49]],'#1a4a6b',0.85);
+ 
+ // Aral Sea (shrunk)
+ drawWater([[44.5,58.5],[45.5,60],[45,61],[44,60.5],[44.5,58.5]],'#1a3a5b',0.7);
+ 
+ // Balkhash
+ drawWater([[46,73],[46.5,79],[46,80],[45.5,78],[45.5,74],[46,73]],'#1a3a5b',0.7);
+ 
+ // Rivers
+ routes.forEach((route,ri)=>{
+ ctx.beginPath();
+ route.forEach((pt,i)=>{
+ const {x,y}=geo2px(pt[0],pt[1]);
+ i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+ });
+ ctx.strokeStyle=`rgba(50,150,255,0.5)`;
+ ctx.lineWidth=2;
+ ctx.setLineDash([8,5]);
+ ctx.stroke();
+ ctx.setLineDash([]);
+ 
+ // Flow animation
+ const prog = (animT*0.3+ri*0.25)%1;
+ const idx = Math.floor(prog*(route.length-1));
+ const t2 = prog*(route.length-1)-idx;
+ if(idx<route.length-1){
+ const a=route[idx],b=route[idx+1];
+ const ax=geo2px(a[0],a[1]).x, ay=geo2px(a[0],a[1]).y;
+ const bx=geo2px(b[0],b[1]).x, by=geo2px(b[0],b[1]).y;
+ const fx=ax+(bx-ax)*t2, fy=ay+(by-ay)*t2;
+ ctx.beginPath(); ctx.arc(fx,fy,4,0,Math.PI*2);
+ ctx.fillStyle='rgba(100,180,255,0.9)'; ctx.fill();
+ }
+ });
+ 
+ // Contamination points
+ contamPoints.forEach(p=>{
+ const {x,y}=geo2px(p.lat,p.lon);
+ const col = colorMap[p.severity];
+ const isHov = hovered===p;
+ const pulse = (Math.sin(animT*2+(x+y)*0.01)+1)*0.5;
+ const r = isHov ? 18 : 10+pulse*4;
+ 
+ // Glow
+ const glow = ctx.createRadialGradient(x,y,0,x,y,r*2);
+ glow.addColorStop(0,col+'60'); glow.addColorStop(1,col+'00');
+ ctx.beginPath(); ctx.arc(x,y,r*2,0,Math.PI*2);
+ ctx.fillStyle=glow; ctx.fill();
+ 
+ // Dot
+ ctx.beginPath(); ctx.arc(x,y,r*0.6,0,Math.PI*2);
+ ctx.fillStyle=col; ctx.fill();
+ ctx.strokeStyle='rgba(255,255,255,0.3)'; ctx.lineWidth=1; ctx.stroke();
+ 
+ // Label on hover
+ if(isHov){
+ const tw = ctx.measureText(p.label).width;
+ const bx = Math.min(x-tw/2-8, w-tw-30);
+ const bxc = Math.max(bx, 5);
+ ctx.fillStyle='rgba(0,0,0,0.85)';
+ ctx.beginPath(); ctx.roundRect(bxc, y-42, tw+16, 36, 6); ctx.fill();
+ ctx.font='600 12px Inter'; ctx.fillStyle='#fff'; ctx.textAlign='center';
+ ctx.fillText(p.label, bxc+tw/2+8, y-28);
+ ctx.font='400 11px Inter'; ctx.fillStyle=col;
+ ctx.fillText(p.val, bxc+tw/2+8, y-14);
+ ctx.textAlign='left';
+ }
+ });
+ 
+ // Year label
+ ctx.font='800 40px Syne,sans-serif'; ctx.fillStyle='rgba(255,255,255,0.05)';
+ ctx.textAlign='right'; ctx.fillText('2026', w-20, h-20); ctx.textAlign='left';
+ 
+ // North arrow
+ ctx.font='500 11px Inter'; ctx.fillStyle='rgba(200,220,255,0.6)';
+ ctx.fillText('N ↑', 16, 28);
+ }
+ drawMap();
+})();
+</script>
+</body>
+</html>
